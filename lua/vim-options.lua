@@ -14,6 +14,7 @@ vim.opt.writebackup = false
 vim.g.mapleader = " "
 
 vim.keymap.set('n', '<c-s>', ':wa<CR>')
+vim.keymap.set('i', '<C-s>', '<C-o>:wa<CR>', { silent = true, desc = 'Save all buffers' })
 
 -- Navigate vim panes better navi
 vim.keymap.set('n', '<c-k>', ':wincmd k<CR>')
