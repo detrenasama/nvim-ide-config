@@ -32,11 +32,12 @@ return {
       local no_ts_indent = { javascript = true, jsx = true, typescript = true, tsx = true }
       vim.api.nvim_create_autocmd("FileType", {
         callback = function(ev)
+          -- в 0.12 language.add не бросает ошибку, а возвращает nil, если парсера нет
           local lang = vim.treesitter.language.get_lang(ev.match)
-          if not lang or not pcall(vim.treesitter.language.add, lang) then
+          if not (lang and vim.treesitter.language.add(lang)) then
             return
           end
-          vim.treesitter.start(ev.buf)
+          vim.treesitter.start(ev.buf, lang)
           if not no_ts_indent[lang] then
             vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
           end
