@@ -30,3 +30,18 @@ vim.keymap.set('n', '<leader>h', ':nohlsearch<CR>')
 vim.wo.number = true
 vim.keymap.set('n', '<Leader>r', ':source $MYVIMRC<CR>', { silent = true })
 
+-- Сессии (см. plugins/persistence.lua): только вкладки, окна и их файлы,
+-- без пустых окон, терминалов, справки и локальных опций.
+vim.opt.sessionoptions = { "curdir", "tabpages", "winsize" }
+
+-- Подхватывать изменения файлов, сделанные в другом редакторе.
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "TermLeave" }, {
+    group = vim.api.nvim_create_augroup("user_checktime", { clear = true }),
+    callback = function()
+        if vim.fn.getcmdwintype() == "" then
+            vim.cmd("checktime")
+        end
+    end,
+})
+
