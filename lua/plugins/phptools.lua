@@ -1,6 +1,43 @@
 return {
     {
     'ccaglak/phptools.nvim',
+    cmd = "PhpTools",
+    -- Отдельные команды Php* для меню pulse: оно показывает только имена команд,
+    -- без подкоманд `:PhpTools <X>`. Создаются при старте (init), а сам плагин
+    -- грузится лениво при первом вызове — lazy.nvim подгружает его на require.
+    init = function()
+      -- desc показывается справа в меню pulse (см. plugins/pulse.lua).
+      local function cmd(name, desc, fn, opts)
+        vim.api.nvim_create_user_command(name, fn, vim.tbl_extend("force", { desc = desc }, opts or {}))
+      end
+      local function tools(f) return function() require("phptools")[f]() end end
+      local function ide(f) return function() require("phptools.ide_helper")[f]() end end
+      local function test(f) return function() require("phptools.tests").test[f]() end end
+
+      cmd("PhpSmart", "Создать метод или класс под курсором (определит сам)", tools("smart"))
+      cmd("PhpMethod", "Создать несуществующий метод под курсором", tools("method"))
+      cmd("PhpClass", "Создать несуществующий класс/трейт/интерфейс/enum под курсором + use", tools("class"))
+      cmd("PhpNamespace", "Вставить namespace по пути файла (composer.json)", tools("namespace"))
+      cmd("PhpGetSet", "Геттер/сеттер для свойства под курсором", tools("getset"))
+      cmd("PhpPropertyHooks", "Property hooks PHP 8.4 для свойства под курсором", tools("propertyhooks"))
+      cmd("PhpScripts", "Запустить скрипт из composer.json", tools("scripts"))
+      cmd("PhpCreate", "Создать файл: класс/интерфейс/enum/трейт, шаблоны Laravel", tools("create"))
+      cmd("PhpRefactor", "Обернуть выделение в if/for/try и т.п. (из visual)", tools("refactor"), { range = true })
+
+      cmd("PhpIdeHelperAll", "Laravel IDE Helper: сгенерировать всё", ide("generate_all"))
+      cmd("PhpIdeHelperModels", "Laravel IDE Helper: хелперы моделей", ide("generate_models"))
+      cmd("PhpIdeHelperFacades", "Laravel IDE Helper: хелперы фасадов", ide("generate_facades"))
+      cmd("PhpIdeHelperMeta", "Laravel IDE Helper: .phpstorm.meta.php", ide("generate_meta"))
+      cmd("PhpIdeHelperInstall", "Laravel IDE Helper: установить пакет через composer", ide("install"))
+
+      cmd("PhpTestAll", "Тесты: запустить все", test("all"))
+      cmd("PhpTestFile", "Тесты: текущий файл", test("file"))
+      cmd("PhpTestLine", "Тесты: ближайший к курсору тест", test("line"))
+      cmd("PhpTestFilter", "Тесты: выбрать тест из списка", test("filter"))
+      cmd("PhpTestParallel", "Тесты: все параллельно (--parallel)", test("parallel"))
+      cmd("PhpTestRerun", "Тесты: повторить последний запуск", test("rerun"))
+      cmd("PhpTestSelected", "Тесты: выбрать файл из tests/", test("selected"))
+    end,
     keys = {
         { "<leader>ll", "<cmd>PhpTools Smart<cr>", desc = "Smart detect (method or class)" },
         { "<leader>lm", "<cmd>PhpTools Method<cr>", desc = "Generate method" },
@@ -57,26 +94,7 @@ return {
           enable = true,      -- PHP 8.4 property hooks generation
         },
       })
-
-      local map = vim.keymap.set
-      local ide_helper = require('phptools.ide_helper')
-      local tests = require("phptools.tests")
-
-      -- Laravel IDE Helper commands
-      --map('n', '<leader>lha', ide_helper.generate_all, { desc = 'Generate all IDE helpers' })
-      --map('n', '<leader>lhm', ide_helper.generate_models, { desc = 'Generate model helpers' })
-      --map('n', '<leader>lhf', ide_helper.generate_facades, { desc = 'Generate facade helpers' })
-      --map('n', '<leader>lht', ide_helper.generate_meta, { desc = 'Generate meta helper' })
-      --map('n', '<leader>lhi', ide_helper.install, { desc = 'Install IDE Helper package' })
-
-      -- Test runner commands
-      --map("n", "<Leader>ta", tests.test.all, { desc = "Run all tests" })
-      --map("n", "<Leader>tf", tests.test.file, { desc = "Run file tests" })
-      --map("n", "<Leader>tl", tests.test.line, { desc = "Run test at cursor" })
-      --map("n", "<Leader>ts", tests.test.filter, { desc = "Search and run test" })
-      --map("n", "<Leader>tp", tests.test.parallel, { desc = "Run tests in parallel" })
-      --map("n", "<Leader>tr", tests.test.rerun, { desc = "Rerun last test" })
-      --map("n", "<Leader>ti", tests.test.selected, { desc = "Run selected test file" })
+      -- IDE Helper и тесты доступны командами PhpIdeHelper* / PhpTest* (см. init).
     end
 }
 }
