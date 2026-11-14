@@ -77,9 +77,17 @@ return {
             vim.lsp.enable('intelephense')
 
             vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
-            vim.keymap.set("n", "gd", vim.lsp.buf.definition, {})
+            -- Определения/использования через Telescope вместо quickfix.
+            -- В пикере: <CR> — здесь, <C-t> — новый таб, <C-v> — vsplit, <C-x> — split.
+            vim.keymap.set("n", "gd", function()
+                require("telescope.builtin").lsp_definitions({ jump_type = "tab drop" })
+            end, { desc = "LSP: definition" })
             vim.keymap.set("n", "gD", vim.lsp.buf.declaration, {})
-            vim.keymap.set("n", "gr", vim.lsp.buf.references, {})
+            vim.keymap.set("n", "gr", function()
+                require("telescope.builtin").lsp_references({
+                    include_declaration = false, jump_type = "tab drop",
+                })
+            end, { desc = "LSP: references" })
             vim.keymap.set("n", "<C-M-l>", vim.lsp.buf.format, {})
             vim.keymap.set("n", "<Leader>cf", vim.lsp.buf.format, {})
             vim.keymap.set("v", "<C-M-l>", vim.lsp.buf.format, {})
